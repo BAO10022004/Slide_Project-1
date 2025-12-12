@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Slide - [TÊN SLIDE]</title>
+  <style>
+    :root{
+      --bg:#0b0c0f;
+      --panel:#0f1114;
+      --accent:#00d4ff;
+      --muted:#9aa3ad;
+      --text:#eef2f5;
+      --shadow: rgba(0,0,0,0.6);
+      --radius:12px;
+      --maxw:1200px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%; margin:0; background:var(--bg); color:var(--text); font-family: "Inter", "Segoe UI", Roboto, sans-serif;}
+    .wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:48px;
+    }
+    .card{
+      width:100%;
+      max-width:var(--maxw);
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      padding:48px;
+      box-shadow: 0 10px 30px var(--shadow);
+      border:1px solid rgba(255,255,255,0.03);
+    }
+    header h1{margin:0; font-size:36px; color:var(--accent); letter-spacing:0.6px;}
+    header p{margin:6px 0 20px; color:var(--muted);}
+    .lead{font-size:20px; line-height:1.6; color:var(--text); margin-bottom:18px;}
+    .cols{display:flex; gap:28px; align-items:flex-start}
+    .col{flex:1}
+    .small{font-size:15px; color:var(--muted)}
+    .list{margin:0; padding-left:18px}
+    .list li{margin:8px 0; font-size:18px}
+    footer{display:flex; justify-content:space-between; align-items:center; margin-top:26px; color:var(--muted)}
+    .page{font-weight:600; color:var(--accent)}
+    /* responsive */
+    @media (max-width:900px){
+      .card{padding:28px}
+      .cols{flex-direction:column}
+      header h1{font-size:28px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+     <header>
+  <h1>BÁO CÁO ĐỒ ÁN PROJECT 1</h1>
+  <p class="small">Đề tài: Nghiên cứu và xây dựng hệ thống quản lý đặt sân thể thao trực tuyến</p>
+</header>
+
+<div class="lead">
+  Sinh viên thực hiện: <strong>Trần Phương Anh</strong> – <strong>Lê Đình Khôi</strong> – <strong>Ôn Gia Bảo</strong><br>
+  Giảng viên hướng dẫn: ThS. Trần Phong Nhã<br>
+  Phân hiệu: Trường Đại học Giao thông Vận tải – TP. HCM
+</div>
+
+      <footer>
+        <div class="small">Đồ án: Hệ thống quản lý đặt sân thể thao</div>
+        <div class="page">Slide 1 / 24</div>
+      </footer>
+    </div>
+  </div>
+</body>
+</html>

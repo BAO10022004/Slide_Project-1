@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Đồ án - Hệ thống quản lý đặt sân thể thao (Trình chiếu)</title>
+<style>
+  :root{
+    --bg:#0a0b0d;
+    --panel:#0f1316;
+    --accent:#00c7ff;
+    --muted:#98a2a8;
+    --text:#eef6fb;
+    --card-shadow: 0 18px 40px rgba(0,0,0,0.6);
+    --radius:14px;
+    --maxw:1200px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%; margin:0; background:linear-gradient(180deg,#08090b 0%, #0b0d10 100%); font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif; color:var(--text); -webkit-font-smoothing:antialiased;}
+  .stage{position:relative; width:100vw; height:100vh; overflow:hidden; display:flex; align-items:center; justify-content:center;}
+  .slide{
+    position:absolute;
+    width:90vw;
+    max-width:var(--maxw);
+    height:82vh;
+    padding:48px;
+    border-radius:var(--radius);
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border:1px solid rgba(255,255,255,0.03);
+    box-shadow:var(--card-shadow);
+    opacity:0;
+    transform: translateY(20px) scale(0.995);
+    transition: all 420ms cubic-bezier(.2,.9,.2,1);
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+  }
+  .slide.active{ opacity:1; transform: translateY(0) scale(1); z-index:3; }
+
+  header h1{margin:0; color:var(--accent); font-size:34px; letter-spacing:0.4px;}
+  header p.lead{margin:10px 0 22px; color:var(--muted); font-size:16px;}
+  .content{flex:1; overflow:auto; padding-right:6px;}
+  .content p{font-size:18px; line-height:1.6; margin:12px 0; color:var(--text);}
+  .content ul{margin:12px 0 18px 20px; color:var(--text);}
+  .content li{margin:8px 0; font-size:18px; line-height:1.5}
+  footer{display:flex; justify-content:space-between; align-items:center; margin-top:14px; color:var(--muted); font-size:14px;}
+  .page{color:var(--accent); font-weight:700}
+
+  /* Controls */
+  .nav-btn{
+    position:fixed;
+    top:50%;
+    transform:translateY(-50%);
+    width:64px;
+    height:64px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.04);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    box-shadow:0 8px 24px rgba(0,0,0,0.5);
+    transition:transform .18s ease, background .18s;
+    z-index:50;
+  }
+  .nav-btn:hover{transform:translateY(-50%) scale(1.06); background:rgba(255,255,255,0.045);}
+  .nav-left{left:28px}
+  .nav-right{right:28px}
+
+  .nav-btn svg{width:26px; height:26px; color:var(--text); fill:none; stroke:var(--text); stroke-width:2; opacity:0.92}
+
+  /* progress bar */
+  .progress{
+    position:fixed;
+    left:50%;
+    transform:translateX(-50%);
+    bottom:18px;
+    height:6px;
+    width:60%;
+    background:rgba(255,255,255,0.03);
+    border-radius:6px;
+    overflow:hidden;
+    z-index:40;
+  }
+  .progress > i{
+    display:block;
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,var(--accent), #6be0ff);
+    transition:width .35s ease;
+  }
+
+  /* small helper */
+  .meta{color:var(--muted); font-size:13px}
+  .title-sub{color:var(--muted); font-size:15px; margin-top:6px}
+
+  /* responsiveness */
+  @media (max-width:1000px){
+    .slide{width:94vw; height:86vh; padding:28px;}
+    header h1{font-size:26px}
+    .nav-btn{width:54px; height:54px}
+  }
+  @media (max-width:600px){
+    .slide{width:96vw; height:92vh; padding:20px; border-radius:10px}
+    header h1{font-size:20px}
+    .content p, .content li{font-size:16px}
+    .nav-btn{width:48px;height:48px}
+    .progress{width:86%}
+  }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+
+  <!-- Slides: 24 sections -->
+  <!-- Slide 1 -->
+  <section class="slide active" data-index="1" aria-label="Slide 1">
+  <header style="text-align:center; margin-bottom: 40px;">
+    <h1 style="
+      font-size: 42px;
+      font-weight: 800;
+      margin-bottom: 14px;
+      letter-spacing: 1px;
+      color: var(--accent);
+      text-transform: uppercase;
+    ">
+      BÁO CÁO ĐỒ ÁN GIỮA KỲ
+    </h1>
+
+    <p style="
+      font-size: 22px;
+      color: var(--text);
+      margin-top: 0;
+      opacity: 0.85;
+    ">
+      HỆ THỐNG ĐẶT SÂN THỂ THAO TRỰC TUYẾN
+    </p>
+
+    <p class="lead" style="
+      font-size: 18px;
+      color: var(--muted);
+      margin-top: 10px;
+    ">
+      Đề tài: Nghiên cứu và xây dựng hệ thống quản lý đặt sân thể thao trực tuyến
+    </p>
+  </header>
+
+  <div class="content" style="text-align:center; margin-top: 20px;">
+    <p style="font-size: 20px; margin: 6px 0;">
+      <strong>Sinh viên thực hiện:</strong><br>
+      Trần Phương Anh – Lê Đình Khôi – Ôn Gia Bảo
+    </p>
+
+    <p style="font-size: 20px; margin: 6px 0;">
+      <strong>Giảng viên hướng dẫn:</strong><br>
+      ThS. Trần Phong Nhã
+    </p>
+
+    <p style="
+      font-size: 16px;
+      color: var(--muted);
+      margin-top: 24px;
+      max-width: 600px;
+      margin-left:auto;
+      margin-right:auto;
+      line-height: 1.6;
+    ">
+      Bản trình chiếu này trình bày mục tiêu, phân tích, thiết kế cơ sở dữ liệu, giao diện  
+      và định hướng phát triển của hệ thống đặt sân thể thao.
+    </p>
+  </div>
+
+  <footer style="margin-top: 30px;">
+    <div class="meta">Đồ án Project 1 – Báo cáo giữa kỳ</div>
+    <div class="page">Slide 1 / 24</div>
+  </footer>
+</section>
+
+
+  <!-- Slide 2 -->
+  <section class="slide" data-index="2" aria-label="Slide 2">
+    <header>
+      <h1>Tổng quan</h1>
+      <p class="lead">Tóm tắt nội dung các chương trong báo cáo</p>
+    </header>
+    <div class="content">
+      <ul>
+        <li>Chương 1: Tổng quan về hệ thống và thực trạng.</li>
+        <li>Chương 2: Cơ sở lý thuyết (kiến trúc phân tầng, Laravel, MySQL).</li>
+        <li>Chương 3: Phân tích hệ thống - Usecases và quy trình.</li>
+        <li>Chương 4: Thiết kế hệ thống và cơ sở dữ liệu.</li>
+        <li>Chương 5: Giao diện hệ thống (chi tiết UI/UX, công nghệ).</li>
+        <li>Kết luận & hướng phát triển.</li>
+      </ul>
+    </div>
+    <footer>
+      <div class="meta">Mục lục</div>
+      <div class="page">Slide 2 / 24</div>
+    </footer>
+  </section>
+
+  <!-- Slide 3 -->
+  <section class="slide" data-index="3" aria-label="Slide 3">
+  <header style="margin-bottom: 20px;">
+    <h1 style="
+      font-size: 34px;
+      margin-bottom: 6px;
+      color: var(--accent);
+    ">Giới thiệu hệ thống</h1>
+
+    <p class="lead" style="
+      font-size: 18px;
+      color: var(--muted);
+      margin-top: 0;
+    ">
+      Mục tiêu và phạm vi dự án
+    </p>
+  </header>
+
+  <div class="content" style="
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      justify-content: space-between;
+  ">
+    
+    <!-- LEFT TEXT BLOCK -->
+    <div style="flex: 1;">
+      <p style="font-size: 18px; line-height: 1.6;">
+        Hệ thống được phát triển nhằm số hóa toàn bộ quy trình đặt sân thể thao, hỗ trợ người dùng 
+        trong việc tìm kiếm, đặt sân và thanh toán trực tuyến. Chủ sân có thể dễ dàng quản lý lịch,
+        bảng giá, dịch vụ và theo dõi doanh thu theo thời gian thực.
+      </p>
+
+      <p style="font-size: 18px; line-height: 1.6;">
+        Phạm vi triển khai phù hợp từ các sân nhỏ đến trung bình và hỗ trợ đa dạng các môn thể thao
+        như: cầu lông, bóng đá, tennis, bóng rổ,...
+      </p>
+
+      <p class="meta" style="margin-top: 14px;">
+        Mục tiêu dài hạn: mở rộng đa chi nhánh, phát triển ứng dụng mobile và tích hợp AI
+        nâng cao cho gợi ý tìm kiếm cá nhân hóa.
+      </p>
+    </div>
+
+    <!-- RIGHT IMAGE BLOCK -->
+    <div style="flex: 1; text-align:center;">
+      <img 
+        src="./Turf-Booking-Apps.png"
+        alt="Hình minh họa hệ thống"
+        style="
+          width: 100%;
+          border-radius: 14px;
+          border: 1px solid rgba(255,255,255,0.06);
+          box-shadow: 0 12px 28px rgba(0,0,0,0.55);
+        "
+      >
+      <p style="font-size: 14px; color: var(--muted); margin-top: 8px;">
+      </p>
+    </div>
+
+  </div>
+
+  <footer style="margin-top: 18px;">
+    <div class="meta">Giới thiệu</div>
+    <div class="page">Slide 3 / 24</div>
+  </footer>
+</section>
+
+  <!-- Slide 4 -->
+  <section class="slide" data-index="4" aria-label="Slide 4">
+    <header>
+      <h1>Thực trạng và lý do cần hệ thống</h1>
+      <p class="lead">Vấn đề hiện tại tại nhiều cơ sở thể thao</p>
+    </header>
+    <div class="content">
+      <p>Hiện nay nhiều sân vẫn tiếp nhận đặt chỗ qua điện thoại hoặc trực tiếp, dẫn tới lo ngại trùng lịch, bỏ sót thông tin và mất nhiều thời gian xử lý cho nhân viên.</p>
+      <p>Việc quản lý doanh thu và lập báo cáo thường làm thủ công bằng Excel, gây sai sót và thiếu tính tức thời.</p>
+      <p>Hệ thống trực tuyến giúp tối ưu hóa trải nghiệm khách hàng và nâng cao hiệu quả quản lý cho chủ sân và admin.</p>
+    </div>
+    <footer>
+      <div class="meta">Thực trạng</div>
+      <div class="page">Slide 4 / 24</div>
+    </footer>
+  </section>
+
+  <!-- Slide 5 -->
+  <section class="slide" data-index="5" aria-label="Slide 5">
+  <header style="margin-bottom: 20px;">
+    <h1 style="
+      font-size: 32px;
+      color: var(--accent);
+      margin-bottom: 8px;
+    ">Kiến trúc hệ thống (Layered)</h1>
+
+    <p class="lead" style="color: var(--muted); margin-top: 0;">
+      Tách biệt chức năng – dễ mở rộng và bảo trì
+    </p>
+  </header>
+
+  <div class="content" style="
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    justify-content: space-between;
+  ">
+
+    <!-- LEFT TEXT + ICONS -->
+    <div style="flex: 1;">
+      <div style="
+        display:flex;
+        align-items:flex-start;
+        gap:14px;
+        margin-bottom:20px;
+      ">
+        <img src="./presentation.png" alt="Presentation Layer"
+          style="width:48px; opacity:0.9;">
+        <div>
+          <p style="font-size:18px; margin:0;">
+            <strong>Tầng Presentation:</strong> ReactJS + TypeScript, chạy frontend với UI hiện đại và khả năng tái sử dụng component.
+          </p>
+        </div>
+      </div>
+
+      <div style="
+        display:flex;
+        align-items:flex-start;
+        gap:14px;
+        margin-bottom:20px;
+      ">
+        <img src="./self-control.png" alt="Business Logic"
+          style="width:48px; opacity:0.9;">
+        <div>
+          <p style="font-size:18px; margin:0;">
+            <strong>Tầng Business Logic:</strong> Laravel Services xử lý nghiệp vụ, kiểm tra điều kiện và xác thực dữ liệu.
+          </p>
+        </div>
+      </div>
+
+      <div style="
+        display:flex;
+        align-items:flex-start;
+        gap:14px;
+        margin-bottom:20px;
+      ">
+        <img src="./file-access.png" alt="Data Access"
+          style="width:48px; opacity:0.9;">
+        <div>
+          <p style="font-size:18px; margin:0;">
+            <strong>Tầng Data Access:</strong> Eloquent ORM quản lý truy vấn, ánh xạ Model – Database thống nhất.
+          </p>
+        </div>
+      </div>
+
+      <div style="
+        display:flex;
+        align-items:flex-start;
+        gap:14px;
+        margin-bottom:14px;
+      ">
+        <img src="./data-server.png" alt="Database"
+          style="width:48px; opacity:0.9;">
+        <div>
+          <p style="font-size:18px; margin:0;">
+            <strong>Tầng Database:</strong> MySQL lưu trữ dữ liệu với cấu trúc rõ ràng, hỗ trợ mở rộng và backup.
+          </p>
+        </div>
+      </div>
+
+      <p class="meta" style="margin-top: 14px;">
+        Filament được tích hợp ở tầng quản trị để tối ưu CRUD, bảng điều khiển và phân quyền admin.
+      </p>
+    </div>
+
+    <!-- RIGHT IMAGE (ARCHITECTURE DIAGRAM) -->
+    <div style="flex:1; text-align:center;">
+      <img 
+        src="./3458da6b-a96f-4ec7-876a-5cd687c4ee0f.webp"
+        alt="Sơ đồ kiến trúc hệ thống"
+        style="
+          width: 92%;
+          border-radius: 14px;
+          border: 1px solid rgba(255,255,255,0.06);
+          box-shadow: 0 12px 30px rgba(0,0,0,0.55);
+        "
+      >
+      <p style="font-size:14px; color:var(--muted); margin-top:8px;">
+        *Sơ đồ kiến trúc phân tầng của hệ thống*
+      </p>
+    </div>
+
+  </div>
+
+  <footer style="margin-top: 20px;">
+    <div class="meta">Kiến trúc</div>
+    <div class="page">Slide 5 / 24</div>
+  </footer>
+</section>
+
+  <!-- Slide 6 -->
+    <section class="slide" data-index="6" aria-label="Slide 6">
+        <header style="margin-bottom: 20px;">
+            <h1 style="
+            font-size: 32px;
+            color: var(--accent);
+            margin-bottom: 8px;
+            ">
+            Công nghệ & công cụ
+            </h1>
+
+            <p class="lead" style="color: var(--muted); margin-top:0;">
+            Stack chính của dự án
+            </p>
+        </header>
+
+        <div class="content" style="
+            display: flex;
+            gap: 40px;
+            justify-content: space-between;
+            align-items: flex-start;
+        ">
+
+            <!-- LEFT TEXT BLOCK -->
+            <div style="flex: 1;">
+
+            <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+                <img src="./typescript.png" alt="React" style="width:50px;">
+                <p style="font-size:18px; margin:0;">
+                <strong>Frontend:</strong> ReactJS + TypeScript, build bằng Vite.  
+                CSS tự viết để đảm bảo nhận diện thương hiệu và tối ưu hiệu suất.
+                </p>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+                <img src="./file.png" alt="Laravel" style="width:50px;">
+                <p style="font-size:18px; margin:0;">
+                <strong>Backend:</strong> Laravel (PHP) xử lý API, phân quyền, nghiệp vụ.  
+                Filament được sử dụng để xây dựng admin panel nhanh và trực quan.
+                </p>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+                <img src="./artificial-intelligence.png" alt="FastAPI" style="width:50px;">
+                <p style="font-size:18px; margin:0;">
+                <strong>Machine Learning:</strong> mô hình SVM gợi ý tìm kiếm;  
+                triển khai inference bằng FastAPI để giao tiếp với frontend.
+                </p>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:16px;">
+                <img src="./mysql-database.png" alt="MySQL" style="width:50px;">
+                <p style="font-size:18px; margin:0;">
+                <strong>Database:</strong> MySQL.  
+                Hệ thống triển khai migration & seeder giúp đồng bộ dữ liệu khi phát triển.
+                </p>
+            </div>
+
+            <p class="meta" style="margin-top:20px;">
+                Lựa chọn stack nhằm cân bằng tốc độ phát triển, khả năng mở rộng và hiệu năng triển khai thực tế.
+            </p>
+            </div>
+
+            <!-- RIGHT SIDE ICON GRID -->
+            </div>
+        
+
+        <footer style="margin-top: 20px;">
+            <div class="meta">Công nghệ</div>
+            <div class="page">Slide 6 / 24</div>
+        </footer>
+    </section>
+
+
+  <!-- Slide 7 -->
+<section class="slide" data-index="7" aria-label="Slide 7">
+  <header style="margin-bottom: 20px;">
+    <h1 style="font-size: 32px; color: var(--accent); margin-bottom: 6px;">
+      Người dùng và vai trò
+    </h1>
+    <p class="lead" style="color: var(--muted); margin-top: 0;">
+      Ba nhóm tương tác chính trong hệ thống
+    </p>
+  </header>
+
+  <div class="content" style="
+    display: flex;
+    gap: 28px;
+    justify-content: center;
+    align-items: stretch;
+    margin-top: 10px;
+  ">
+
+    <!-- USER -->
+    <div style="
+      flex:1;
+      padding: 22px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+      text-align: center;
+    ">
+      <img src="./group.png" alt="User"
+        style="width:60px; margin-bottom:14px;">
+      <h2 style="font-size: 22px; margin: 0 0 10px; color: var(--text);">
+        Người dùng (User)
+      </h2>
+      <p style="font-size: 17px; line-height:1.55; color: var(--muted);">
+        Đặt sân, tìm kiếm, xem chi tiết sân và đánh giá sau khi sử dụng.
+      </p>
+    </div>
+
+    <!-- OWNER -->
+    <div style="
+      flex:1;
+      padding: 22px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+      text-align: center;
+    ">
+      <img src="./company.png" alt="Owner"
+        style="width:60px; margin-bottom:14px;">
+      <h2 style="font-size: 22px; margin: 0 0 10px; color: var(--text);">
+        Chủ sân (Owner)
+      </h2>
+      <p style="font-size: 17px; line-height:1.55; color: var(--muted);">
+        Quản lý venue, sân con, bảng giá, dịch vụ kèm và lịch đặt theo thời gian thực.
+      </p>
+    </div>
+
+    <!-- ADMIN -->
+    <div style="
+      flex:1;
+      padding: 22px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+      text-align: center;
+    ">
+      <img src="./download (1).png" alt="Admin"
+        style="width:60px; margin-bottom:14px;">
+      <h2 style="font-size: 22px; margin: 0 0 10px; color: var(--text);">
+        Admin hệ thống
+      </h2>
+      <p style="font-size: 17px; line-height:1.55; color: var(--muted);">
+        Phê duyệt nội dung, quản trị tài khoản, can thiệp đơn đặt và xem báo cáo tổng thể.
+      </p>
+    </div>
+
+  </div>
+
+  <footer style="margin-top: 25px;">
+    <div class="meta">Actors</div>
+    <div class="page">Slide 7 / 24</div>
+  </footer>
+</section>
+
+
+  <!-- Slide 8 -->
+  <!-- Slide 8 (với sơ đồ luồng chạy SVG interactive) -->
+<section class="slide" data-index="8" aria-label="Slide 8">
+
+  <header style="margin-bottom: 20px;">
+    <h1 style="font-size: 32px; color: var(--accent); margin-bottom: 6px;">
+      Use Case: Người dùng (User)
+    </h1>
+    <p class="lead" style="color: var(--muted); margin-top: 0;">
+      Luồng chức năng dành cho khách hàng — minh họa flow từ đăng nhập đến lịch sử
+    </p>
+  </header>
+
+  <div class="content" style="
+    display: flex;
+    gap: 36px;
+    justify-content: space-between;
+    align-items: flex-start;
+  ">
+
+    <!-- LEFT USE-CASE STEPS -->
+    <div style="flex: 1; min-width: 320px;">
+      
+      <!-- Step 1 -->
+      <div style="display:flex; gap:18px; margin-bottom:18px; align-items:flex-start;">
+        <div style="width:42px; height:42px; border-radius:10px; background:rgba(0,199,255,0.08); display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,199,255,0.12);">
+          <!-- simple icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-3-3.87"/><path d="M4 21v-2a4 4 0 0 1 3-3.87"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <p style="font-size:18px; line-height:1.55; margin:0;">
+          <strong>1. Đăng ký / Đăng nhập</strong> bằng email hoặc số điện thoại. Hệ thống xác thực và lưu session.
+        </p>
+      </div>
+
+      <!-- Step 2 -->
+      <div style="display:flex; gap:18px; margin-bottom:18px; align-items:flex-start;">
+        <div style="width:42px; height:42px; border-radius:10px; background:rgba(0,199,255,0.06); display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,199,255,0.08);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <p style="font-size:18px; line-height:1.55; margin:0;">
+          <strong>2. Tìm kiếm</strong> bằng từ khóa hoặc bộ lọc (môn, khu vực, giá, khung giờ trống).
+        </p>
+      </div>
+
+      <!-- Step 3 -->
+      <div style="display:flex; gap:18px; margin-bottom:18px; align-items:flex-start;">
+        <div style="width:42px; height:42px; border-radius:10px; background:rgba(0,199,255,0.06); display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,199,255,0.08);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M3 12h18"/></svg>
+        </div>
+        <p style="font-size:18px; line-height:1.55; margin:0;">
+          <strong>3. Gợi ý SVM (FastAPI)</strong> mô hình trả về danh sách ưu tiên.
+        </p>
+      </div>
+
+      <!-- Step 4 -->
+      <div style="display:flex; gap:18px; margin-bottom:18px; align-items:flex-start;">
+        <div style="width:42px; height:42px; border-radius:10px; background:rgba(0,199,255,0.06); display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,199,255,0.08);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3v4"/><path d="M8 3v4"/></svg>
+        </div>
+        <p style="font-size:18px; line-height:1.55; margin:0;">
+          <strong>4. Đặt sân</strong>: chọn khung giờ → xác nhận → thanh toán → nhận email/SMS xác nhận.
+        </p>
+      </div>
+
+      <!-- Step 5 -->
+      <div style="display:flex; gap:18px; align-items:flex-start;">
+        <div style="width:42px; height:42px; border-radius:10px; background:rgba(0,199,255,0.06); display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,199,255,0.08);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"/><path d="M7 11h10"/></svg>
+        </div>
+        <p style="font-size:18px; line-height:1.55; margin:0;">
+          <strong>5. Quản lý lịch sử</strong>: xem/huỷ/đổi đặt, và đánh giá sân sau khi sử dụng.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: SVG FLOW DIAGRAM -->
+    <div style="flex: 1; min-width: 420px; display:flex; flex-direction:column; align-items:center;">
+      <svg viewBox="0 0 900 300" width="100%" style="max-width:680px;">
+        <defs>
+          <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.5"/>
+          </filter>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#00c7ff"></path>
+          </marker>
+        </defs>
+
+        <!-- Boxes -->
+        <g class="nodes" fill="none" stroke="rgba(255,255,255,0.06)">
+          <!-- Login -->
+          <rect x="20" y="110" rx="12" ry="12" width="160" height="80" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)"></rect>
+          <text x="100" y="150" fill="var(--text)" font-size="16" font-weight="700" text-anchor="middle">Đăng nhập</text>
+          <text x="100" y="170" fill="var(--muted)" font-size="12" text-anchor="middle">Auth / Session</text>
+
+          <!-- Search -->
+          <rect x="220" y="85" rx="12" ry="12" width="160" height="130" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)"></rect>
+          <text x="300" y="140" fill="var(--text)" font-size="16" font-weight="700" text-anchor="middle">Tìm kiếm</text>
+          <text x="300" y="160" fill="var(--muted)" font-size="12" text-anchor="middle">Filter & Query</text>
+
+          <!-- SVM -->
+          <rect x="420" y="110" rx="12" ry="12" width="160" height="80" fill="rgba(0,199,255,0.04)" stroke="rgba(0,199,255,0.12)"></rect>
+          <text x="500" y="150" fill="var(--accent)" font-size="16" font-weight="700" text-anchor="middle">SVM (FastAPI)</text>
+          <text x="500" y="170" fill="var(--muted)" font-size="12" text-anchor="middle">Gợi ý kết quả</text>
+
+          <!-- Booking -->
+          <rect x="620" y="85" rx="12" ry="12" width="160" height="130" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)"></rect>
+          <text x="700" y="140" fill="var(--text)" font-size="16" font-weight="700" text-anchor="middle">Đặt sân</text>
+          <text x="700" y="160" fill="var(--muted)" font-size="12" text-anchor="middle">Xác nhận & Thanh toán</text>
+
+          <!-- History -->
+          <rect x="820" y="110" rx="12" ry="12" width="0" height="0" fill="none" stroke="none"></rect>
+        </g>
+
+        <!-- Arrows (with animated stroke) -->
+        <g stroke="url(#grad)" stroke-width="2" fill="none">
+          <line x1="180" y1="150" x2="220" y2="150" stroke="rgba(255,255,255,0.06)" marker-end="url(#arrow)"></line>
+          <line x1="380" y1="150" x2="420" y2="150" stroke="rgba(0,199,255,0.6)" marker-end="url(#arrow)" style="stroke-width:3"></line>
+          <line x1="580" y1="150" x2="620" y2="150" stroke="rgba(255,255,255,0.06)" marker-end="url(#arrow)"></line>
+        </g>
+
+        <!-- Animated pulse on SVM box -->
+        <rect x="412" y="102" rx="14" ry="14" width="176" height="96" fill="none" stroke="rgba(0,199,255,0.18)" stroke-width="2" filter="url(#shadow)">
+          <animate attributeName="opacity" values="0.0;0.35;0.0" dur="2.8s" repeatCount="indefinite"/>
+        </rect>
+
+        <!-- connection to history (below Booking) -->
+        <line x1="700" y1="215" x2="700" y2="260" stroke="rgba(255,255,255,0.06)" stroke-width="2" marker-end="url(#arrow)"></line>
+        <rect x="620" y="260" rx="12" ry="12" width="160" height="32" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)"></rect>
+        <text x="700" y="282" fill="var(--muted)" font-size="12" text-anchor="middle">Lịch sử & Đánh giá</text>
+
+      </svg>
+
+      <p style="font-size:14px; color:var(--muted); margin-top:12px; text-align:center; max-width:80%;">
+        Sơ đồ minh họa luồng chính: từ đăng nhập → tìm kiếm → SVM gợi ý → đặt sân → lưu lịch sử.
+      </p>
+    </div>
+
+  </div>
+
+  <footer style="margin-top: 25px;">
+    <div class="meta">Use Case - User</div>
+    <div class="page">Slide 8 / 24</div>
+  </footer>
+
+</section>
+
+
+  <!-- Slide 9 -->
+  <!-- Slide 9 -->
+<section class="slide" data-index="9" aria-label="Slide 9">
+
+  <header style="margin-bottom: 20px;">
+    <h1 style="font-size: 32px; color: var(--accent); margin-bottom: 6px;">
+      Use Case: Chủ sân (Owner)
+    </h1>
+    <p class="lead" style="color: var(--muted); margin-top: 0;">
+      Các chức năng chính phục vụ quản lý venue và hoạt động kinh doanh
+    </p>
+  </header>
+
+  <div class="content" style="
+    display: flex;
+    gap: 36px;
+    justify-content: space-between;
+    align-items: flex-start;
+  ">
+
+    <!-- LEFT COLUMN: FEATURES -->
+    <div style="flex: 1; min-width: 330px;">
+
+      <!-- Item 1 -->
+      <div style="display:flex; gap:16px; margin-bottom:18px;">
+        <div style="width:42px; height:42px; border-radius:10px; background:rgba(0,199,255,0.08);
+          display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,199,255,0.14);">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7">
+            <path d="M3 21v-13l9-5 9 5v13H3z" />
+          </svg>
+        </div>
+        <p style="font-size:18px; margin:0; line-height:1.55;">
+          <strong>Quản lý thông tin venue</strong>: tên, địa chỉ, giờ mở cửa, ảnh, thông tin liên hệ.
+        </p>
+      </div>
+
+      <!-- Item 2 -->
+      <div style="display:flex; gap:16px; margin-bottom:18px;">
+        <div style="width:42px; height:42px; border-radius:10px; background:rgba(0,199,255,0.06);
+          display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,199,255,0.14);">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.7">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M4 12h4m8 0h4" />
+          </svg>
+        </div>
+        <p style="font-size:18px; margin:0; line-height:1.55;">
+          <strong>Quản lý sân con</strong>: thêm/sửa trạng thái, hình ảnh, loại sân và mô tả.
+        </p>
+      </div>
+
+      <!-- Item 3 -->
+      <div style="display:flex; gap:16px; margin-bottom:18px;">
+        <div style="width:42px; height:42px; border-radius:10px; background:rgba(0,199,255,0.06);
+          display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,199,255,0.14);">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7">
+            <path d="M3 6h18M3 12h18M3 18h18" />
+          </svg>
+        </div>
+        <p style="font-size:18px; margin:0; line-height:1.55;">
+          <strong>PriceList & ServiceList</strong>: quản lý bảng giá theo khung giờ và dịch vụ kèm theo.
+        </p>
+      </div>
+
+      <!-- Item 4 -->
+      <div style="display:flex; gap:16px; margin-bottom:18px;">
+        <div style="width:42px; height:42px; border-radius:10px; background:rgba(0,199,255,0.06);
+          display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,199,255,0.14);">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.7">
+            <rect x="3" y="4" width="18" height="14" rx="2"/>
+            <path d="M8 2v4m8-4v4" />
+          </svg>
+        </div>
+        <p style="font-size:18px; margin:0; line-height:1.55;">
+          <strong>Quản lý booking</strong>: duyệt yêu cầu, hủy, cập nhật ghi chú và theo dõi trạng thái thanh toán.
+        </p>
+      </div>
+
+      <!-- Item 5 -->
+      <div style="display:flex; gap:16px;">
+        <div style="width:42px; height:42px; border-radius:10px; background:rgba(0,199,255,0.06);
+          display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,199,255,0.14);">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7">
+            <path d="M3 3h18v18H3z"/>
+            <path d="M7 11h10" />
+          </svg>
+        </div>
+        <p style="font-size:18px; margin:0; line-height:1.55;">
+          <strong>Báo cáo doanh thu</strong>: xem thống kê ngày/tháng/quý và xuất báo cáo.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: OWNER FLOW SVG -->
+    <div style="flex: 1; min-width: 420px; display:flex; flex-direction:column; align-items:center;">
+
+      <svg viewBox="0 0 900 350" width="100%" style="max-width:700px;">
+
+        <defs>
+          <marker id="arrow-o" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#00c7ff"></path>
+          </marker>
+        </defs>
+
+        <!-- Nodes -->
+        <rect x="30" y="130" width="160" height="75" rx="12" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)"/>
+        <text x="110" y="165" text-anchor="middle" fill="var(--text)" font-size="15" font-weight="700">Quản lý Venue</text>
+
+        <rect x="230" y="70" width="160" height="75" rx="12" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)"/>
+        <text x="310" y="108" text-anchor="middle" fill="var(--text)" font-size="15" font-weight="700">Sân con</text>
+
+        <rect x="230" y="190" width="160" height="75" rx="12" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)"/>
+        <text x="310" y="228" text-anchor="middle" fill="var(--text)" font-size="15" font-weight="700">Bảng giá & DV</text>
+
+        <rect x="430" y="130" width="160" height="75" rx="12" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)"/>
+        <text x="510" y="167" text-anchor="middle" fill="var(--text)" font-size="15" font-weight="700">Quản lý Booking</text>
+
+        <rect x="630" y="130" width="160" height="75" rx="12" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)"/>
+        <text x="710" y="167" text-anchor="middle" fill="var(--text)" font-size="15" font-weight="700">Doanh thu</text>
+
+        <!-- Arrows -->
+        <line x1="190" y1="165" x2="230" y2="108" stroke="rgba(255,255,255,0.08)" stroke-width="2" marker-end="url(#arrow-o)"/>
+        <line x1="190" y1="165" x2="230" y2="228" stroke="rgba(255,255,255,0.08)" stroke-width="2" marker-end="url(#arrow-o)"/>
+
+        <line x1="390" y1="108" x2="430" y2="165" stroke="rgba(255,255,255,0.08)" stroke-width="2" marker-end="url(#arrow-o)"/>
+        <line x1="390" y1="228" x2="430" y2="165" stroke="rgba(255,255,255,0.08)" stroke-width="2" marker-end="url(#arrow-o)"/>
+
+        <line x1="590" y1="165" x2="630" y2="165" stroke="rgba(255,255,255,0.08)" stroke-width="2" marker-end="url(#arrow-o)"/>
+
+      </svg>
+
+      <p style="font-size:14px; color:var(--muted); margin-top:12px;">
+        Sơ đồ minh họa luồng quản lý: Venue → Sân con / Giá → Booking → Doanh thu.
+      </p>
+    </div>
+
+  </div>
+
+  <footer style="margin-top: 25px;">
+    <div class="meta">Use Case - Owner</div>
+    <div class="page">Slide 9 / 24</div>
+  </footer>
+
+</section>
+
+
+  <!-- Slide 10 -->
+  <!-- Slide 10 -->
+<section class="slide" data-index="10" aria-label="Slide 10">
+
+  <header style="margin-bottom: 20px;">
+    <h1 style="font-size: 32px; color: var(--accent); margin-bottom: 6px;">
+      Use Case: Admin hệ thống
+    </h1>
+    <p class="lead" style="color: var(--muted); margin-top: 0;">
+      Quản trị nền tảng, phê duyệt nội dung và đảm bảo vận hành hệ thống
+    </p>
+  </header>
+
+  <div class="content" style="
+    display: flex;
+    gap: 36px;
+    justify-content: space-between;
+    align-items: flex-start;
+  ">
+
+    <!-- LEFT COLUMN -->
+    <div style="flex: 1; min-width: 330px;">
+
+      <!-- Item 1 -->
+      <div style="display:flex; gap:16px; margin-bottom:18px;">
+        <div style="width:42px; height:42px; border-radius:10px; background:rgba(0,199,255,0.1);
+          display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,199,255,0.18);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8">
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 14v4a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2v-8a2 2 0 0 1 2 -2h11" />
+          </svg>
+        </div>
+        <p style="font-size:18px; margin:0; line-height:1.55;">
+          <strong>Phê duyệt nội dung</strong>: kiểm duyệt venue mới, ảnh sân, chỉnh sửa thông tin.
+        </p>
+      </div>
+
+      <!-- Item 2 -->
+      <div style="display:flex; gap:16px; margin-bottom:18px;">
+        <div style="width:42px; height:42px; border-radius:10px; background:rgba(0,199,255,0.07);
+          display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,199,255,0.14);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.8">
+            <circle cx="12" cy="7" r="4"/>
+            <path d="M6 21v-3a4 4 0 0 1 8 0v3"/>
+          </svg>
+        </div>
+        <p style="font-size:18px; margin:0; line-height:1.55;">
+          <strong>Quản lý tài khoản</strong>: cấp quyền, khóa tài khoản, reset mật khẩu, xác thực chủ sân.
+        </p>
+      </div>
+
+      <!-- Item 3 -->
+      <div style="display:flex; gap:16px; margin-bottom:18px;">
+        <div style="width:42px; height:42px; border-radius:10px; background:rgba(0,199,255,0.07);
+          display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,199,255,0.14);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <circle cx="12" cy="16" r="1"/>
+          </svg>
+        </div>
+        <p style="font-size:18px; margin:0; line-height:1.55;">
+          <strong>Xử lý khiếu nại</strong>: tiếp nhận, phân loại, theo dõi tiến trình giải quyết.
+        </p>
+      </div>
+
+      <!-- Item 4 -->
+      <div style="display:flex; gap:16px; margin-bottom:18px;">
+        <div style="width:42px; height:42px; border-radius:10px; background:rgba(0,199,255,0.07);
+          display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,199,255,0.14);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.8">
+            <path d="M3 3h18v18H3z"/>
+            <path d="M7 11h10M7 15h7"/>
+          </svg>
+        </div>
+        <p style="font-size:18px; margin:0; line-height:1.55;">
+          <strong>Quản trị hệ thống</strong>: giám sát logs, trạng thái API, xử lý lỗi dịch vụ.
+        </p>
+      </div>
+
+      <!-- Item 5 -->
+      <div style="display:flex; gap:16px;">
+        <div style="width:42px; height:42px; border-radius:10px; background:rgba(0,199,255,0.07);
+          display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,199,255,0.14);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8">
+            <path d="M3 3h18v18H3z"/>
+            <path d="M7 8h10M7 12h10M7 16h7"/>
+          </svg>
+        </div>
+        <p style="font-size:18px; margin:0; line-height:1.55;">
+          <strong>Báo cáo tổng hợp</strong>: thống kê hoạt động, revenue dashboard, báo cáo trách nhiệm.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: SVG FLOW DIAGRAM -->
+    <div style="flex: 1; min-width: 420px; display:flex; flex-direction:column; align-items:center;">
+
+      <svg viewBox="0 0 900 350" width="100%" style="max-width:700px;">
+
+        <defs>
+          <marker id="arrow-admin" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#00c7ff"></path>
+          </marker>
+        </defs>
+
+        <!-- Nodes -->
+        <rect x="30" y="130" width="170" height="75" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+        <text x="115" y="165" text-anchor="middle" fill="var(--text)" font-size="15" font-weight="700">Phê duyệt nội dung</text>
+
+        <rect x="250" y="70" width="170" height="75" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+        <text x="335" y="108" text-anchor="middle" fill="var(--text)" font-size="15" font-weight="700">Quản lý tài khoản</text>
+
+        <rect x="250" y="190" width="170" height="75" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+        <text x="335" y="228" text-anchor="middle" fill="var(--text)" font-size="15" font-weight="700">Khiếu nại</text>
+
+        <rect x="470" y="130" width="170" height="75" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+        <text x="555" y="167" text-anchor="middle" fill="var(--text)" font-size="15" font-weight="700">Quản trị hệ thống</text>
+
+        <rect x="690" y="130" width="170" height="75" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+        <text x="775" y="167" text-anchor="middle" fill="var(--text)" font-size="15" font-weight="700">Báo cáo</text>
+
+        <!-- Arrows -->
+        <line x1="200" y1="165" x2="250" y2="108" stroke="rgba(255,255,255,0.1)" stroke-width="2" marker-end="url(#arrow-admin)"/>
+        <line x1="200" y1="165" x2="250" y2="228" stroke="rgba(255,255,255,0.1)" stroke-width="2" marker-end="url(#arrow-admin)"/>
+
+        <line x1="420" y1="108" x2="470" y2="165" stroke="rgba(255,255,255,0.1)" stroke-width="2" marker-end="url(#arrow-admin)"/>
+        <line x1="420" y1="228" x2="470" y2="165" stroke="rgba(255,255,255,0.1)" stroke-width="2" marker-end="url(#arrow-admin)"/>
+
+        <line x1="640" y1="165" x2="690" y2="165" stroke="rgba(255,255,255,0.1)" stroke-width="2" marker-end="url(#arrow-admin)"/>
+
+      </svg>
+
+      <p style="font-size:14px; color:var(--muted); margin-top:12px;">
+        Luồng quản trị: Phê duyệt → Quản lý tài khoản / Khiếu nại → Quản trị hệ thống → Báo cáo.
+      </p>
+    </div>
+
+  </div>
+
+  <footer style="margin-top: 25px;">
+    <div class="meta">Use Case - Admin</div>
+    <div class="page">Slide 10 / 24</div>
+  </footer>
+
+</section>
+
+
+  <!-- Slide 11 -->
+  <!-- Slide 11 -->
+<section class="slide" data-index="11" aria-label="Slide 11">
+
+  <header style="margin-bottom: 20px;">
+    <h1 style="font-size: 32px; color: var(--accent); margin-bottom: 8px;">
+      Thiết kế CSDL (Tổng quan)
+    </h1>
+    <p class="lead" style="color: var(--muted); margin-top: 0;">
+      Các thực thể chính và mối quan hệ trong hệ thống
+    </p>
+  </header>
+
+  <div class="content" style="
+    display: flex;
+    gap: 40px;
+    justify-content: space-between;
+  ">
+
+    <!-- LEFT CONTENT -->
+    <div style="flex: 1; min-width: 350px;">
+
+      <p style="font-size:18px; line-height:1.55;">
+        CSDL bao gồm các bảng chính:
+      </p>
+
+      <ul style="font-size:18px; line-height:1.6; margin-left:18px;">
+        <li><strong>Users</strong> – thông tin người dùng & role.</li>
+        <li><strong>Venues</strong> – cơ sở thể thao (chủ sân).</li>
+        <li><strong>Grounds</strong> – sân con thuộc từng venue.</li>
+        <li><strong>PriceList & PriceListDetail</strong> – bảng giá & khung giờ.</li>
+        <li><strong>ServiceList & ServiceListDetail</strong> – dịch vụ kèm theo.</li>
+        <li><strong>Bookings</strong> – thông tin đặt sân.</li>
+        <li><strong>Payments</strong> – giao dịch thanh toán.</li>
+        <li><strong>Ratings</strong> – đánh giá sân.</li>
+        <li><strong>Images, Categories, Terms, Events</strong>.</li>
+      </ul>
+
+      <p class="meta" style="margin-top:18px;">
+        Tất cả bảng dùng <strong>GUID</strong> để đảm bảo tính duy nhất, hỗ trợ mở rộng multi-venue, multi-tenant.
+        Thiết kế tối ưu cho truy vấn báo cáo theo ngày/tuần/tháng.
+      </p>
+    </div>
+
+    <!-- RIGHT: SVG DATABASE TABLE MOCKUP -->
+    <div style="flex: 1; min-width: 430px; display:flex; justify-content:center;">
+
+      <svg viewBox="0 0 650 420" width="100%" style="max-width:620px;">
+
+        <!-- TABLE BOX -->
+        <defs>
+          <linearGradient id="table-bg" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.05)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0.02)"/>
+          </linearGradient>
+
+          <filter id="shadow-db" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.45"/>
+          </filter>
+        </defs>
+
+        <!-- VENUES TABLE -->
+        <rect x="40" y="30" width="260" height="150" rx="12"
+          fill="url(#table-bg)" stroke="rgba(255,255,255,0.1)" filter="url(#shadow-db)"></rect>
+
+        <text x="170" y="52" text-anchor="middle"
+          fill="var(--accent)" font-size="18" font-weight="700">
+          Venues
+        </text>
+
+        <text x="55" y="82" fill="var(--text)" font-size="15">• id (GUID)</text>
+        <text x="55" y="105" fill="var(--text)" font-size="15">• name</text>
+        <text x="55" y="128" fill="var(--text)" font-size="15">• address</text>
+        <text x="55" y="151" fill="var(--text)" font-size="15">• owner_id → Users.id</text>
+
+        <!-- GROUNDS TABLE -->
+        <rect x="360" y="30" width="260" height="180" rx="12"
+          fill="url(#table-bg)" stroke="rgba(255,255,255,0.1)" filter="url(#shadow-db)"></rect>
+
+        <text x="490" y="52" text-anchor="middle"
+          fill="var(--accent)" font-size="18" font-weight="700">
+          Grounds
+        </text>
+
+        <text x="375" y="82" fill="var(--text)" font-size="15">• id (GUID)</text>
+        <text x="375" y="105" fill="var(--text)" font-size="15">• venue_id → Venues.id</text>
+        <text x="375" y="128" fill="var(--text)" font-size="15">• ground_type</text>
+        <text x="375" y="151" fill="var(--text)" font-size="15">• status</text>
+        <text x="375" y="174" fill="var(--text)" font-size="15">• thumbnail</text>
+
+        <!-- BOOKINGS TABLE -->
+        <rect x="40" y="220" width="260" height="180" rx="12"
+          fill="url(#table-bg)" stroke="rgba(255,255,255,0.1)" filter="url(#shadow-db)"></rect>
+
+        <text x="170" y="242" text-anchor="middle"
+          fill="var(--accent)" font-size="18" font-weight="700">
+          Bookings
+        </text>
+
+        <text x="55" y="272" fill="var(--text)" font-size="15">• id (GUID)</text>
+        <text x="55" y="295" fill="var(--text)" font-size="15">• user_id → Users.id</text>
+        <text x="55" y="318" fill="var(--text)" font-size="15">• ground_id → Grounds.id</text>
+        <text x="55" y="341" fill="var(--text)" font-size="15">• date, time_range</text>
+        <text x="55" y="364" fill="var(--text)" font-size="15">• status, payment_id</text>
+
+        <!-- PRICELIST TABLE -->
+        <rect x="360" y="250" width="260" height="150" rx="12"
+          fill="url(#table-bg)" stroke="rgba(255,255,255,0.1)" filter="url(#shadow-db)"></rect>
+
+        <text x="490" y="272" text-anchor="middle"
+          fill="var(--accent)" font-size="18" font-weight="700">
+          PriceList
+        </text>
+
+        <text x="375" y="302" fill="var(--text)" font-size="15">• id (GUID)</text>
+        <text x="375" y="325" fill="var(--text)" font-size="15">• venue_id → Venues.id</text>
+        <text x="375" y="348" fill="var(--text)" font-size="15">• type, note</text>
+
+
+        <!-- CONNECT ARROWS -->
+        <defs>
+          <marker id="arrow-db" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#00c7ff" />
+          </marker>
+        </defs>
+
+        <line x1="300" y1="105" x2="360" y2="105"
+          stroke="rgba(255,255,255,0.15)" stroke-width="2" marker-end="url(#arrow-db)"/>
+
+        <line x1="170" y1="220" x2="170" y2="180"
+          stroke="rgba(255,255,255,0.15)" stroke-width="2" marker-end="url(#arrow-db)"/>
+
+        <line x1="500" y1="250" x2="500" y2="210"
+          stroke="rgba(255,255,255,0.15)" stroke-width="2" marker-end="url(#arrow-db)"/>
+
+      </svg>
+
+    </div>
+
+  </div>
+
+  <footer style="margin-top: 25px;">
+    <div class="meta">CSDL</div>
+    <div class="page">Slide 11 / 24</div>
+  </footer>
+
+</section>
+
+
+  <!-- Slide 12 -->
+<!-- Slide 12 -->
+<section class="slide" data-index="12" aria-label="Slide 12">
+
+  <header style="margin-bottom: 20px;">
+    <h1 style="font-size: 32px; color: var(--accent); margin-bottom: 8px;">
+      Cấu trúc bảng Bookings & Payments
+    </h1>
+    <p class="lead" style="color: var(--muted); margin-top: 0;">
+      Lưu trữ đơn đặt sân và thông tin thanh toán
+    </p>
+  </header>
+
+  <div class="content" style="
+    display: flex;
+    gap: 40px;
+    justify-content: space-between;
+  ">
+
+    <!-- LEFT TEXT COLUMN -->
+    <div style="flex: 1; min-width: 350px; font-size:18px; line-height:1.6;">
+
+      <p>
+        <strong>Bookings</strong> lưu thông tin đơn đặt sân:
+        <br>• BookingID (GUID)
+        <br>• UserID → Users.id
+        <br>• GroundID → Grounds.id
+        <br>• Date, StartTime, EndTime, AmountTime
+        <br>• Status (Pending, Confirmed, Paid, Cancelled, Refunded)
+        <br>• EventID (nếu đi kèm sự kiện)
+        <br>• Notes (ghi chú chủ sân/khách hàng)
+      </p>
+
+      <p style="margin-top:20px;">
+        <strong>Payments</strong> lưu thông tin giao dịch:
+        <br>• PaymentID (GUID)
+        <br>• BookingID → Bookings.id
+        <br>• Amount, UnitPrice
+        <br>• Method (Cash, Banking, Momo,…)
+        <br>• Status (Unpaid, Paid, Refunded)
+        <br>• Notes (đối soát thanh toán)
+      </p>
+
+      <p class="meta" style="margin-top:18px;">
+        Thiết kế hỗ trợ đầy đủ luồng thanh toán: chờ duyệt → thanh toán → đối soát → hoàn tiền.
+      </p>
+
+    </div>
+
+    <!-- RIGHT SVG TABLE MOCKUP -->
+    <div style="flex: 1; min-width: 430px; display:flex; justify-content:center;">
+
+      <svg viewBox="0 0 650 430" width="100%" style="max-width:620px;">
+        
+        <defs>
+          <linearGradient id="table-bg-12" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.05)" />
+            <stop offset="100%" stop-color="rgba(255,255,255,0.02)" />
+          </linearGradient>
+
+          <filter id="shadow-12" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.45"/>
+          </filter>
+
+          <marker id="arrow-12" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#00c7ff"></path>
+          </marker>
+        </defs>
+
+        <!-- BOOKINGS TABLE -->
+        <rect x="40" y="40" width="260" height="190" rx="12"
+          fill="url(#table-bg-12)" stroke="rgba(255,255,255,0.10)" filter="url(#shadow-12)" />
+        
+        <text x="170" y="65" text-anchor="middle"
+          fill="var(--accent)" font-size="18" font-weight="700">Bookings</text>
+
+        <text x="55" y="95" fill="var(--text)" font-size="15">• id (GUID)</text>
+        <text x="55" y="118" fill="var(--text)" font-size="15">• user_id → Users.id</text>
+        <text x="55" y="141" fill="var(--text)" font-size="15">• ground_id → Grounds.id</text>
+        <text x="55" y="164" fill="var(--text)" font-size="15">• date, start_time, end_time</text>
+        <text x="55" y="187" fill="var(--text)" font-size="15">• amount_time</text>
+        <text x="55" y="210" fill="var(--text)" font-size="15">• status</text>
+        <text x="55" y="233" fill="var(--text)" font-size="15">• event_id, notes</text>
+
+        <!-- PAYMENTS TABLE -->
+        <rect x="360" y="200" width="260" height="180" rx="12"
+          fill="url(#table-bg-12)" stroke="rgba(255,255,255,0.10)" filter="url(#shadow-12)" />
+
+        <text x="490" y="225" text-anchor="middle"
+          fill="var(--accent)" font-size="18" font-weight="700">Payments</text>
+
+        <text x="375" y="255" fill="var(--text)" font-size="15">• id (GUID)</text>
+        <text x="375" y="278" fill="var(--text)" font-size="15">• booking_id → Bookings.id</text>
+        <text x="375" y="301" fill="var(--text)" font-size="15">• unit_price</text>
+        <text x="375" y="324" fill="var(--text)" font-size="15">• amount</text>
+        <text x="375" y="347" fill="var(--text)" font-size="15">• method</text>
+        <text x="375" y="370" fill="var(--text)" font-size="15">• status, notes</text>
+
+        <!-- ARROW RELATION -->
+        <line x1="260" y1="210" x2="360" y2="240"
+          stroke="rgba(255,255,255,0.15)" stroke-width="2" marker-end="url(#arrow-12)" />
+
+      </svg>
+
+    </div>
+
+  </div>
+
+  <footer style="margin-top: 25px;">
+    <div class="meta">Bookings & Payments</div>
+    <div class="page">Slide 12 / 24</div>
+  </footer>
+
+</section>
+
+
+  <!-- Slide 13 -->
+  <!-- Slide 13 -->
+<section class="slide" data-index="13" aria-label="Slide 13">
+
+  <header style="margin-bottom: 20px;">
+    <h1 style="font-size: 32px; color: var(--accent); margin-bottom: 8px;">
+      Mô hình bảng giá chi tiết
+    </h1>
+    <p class="lead" style="color: var(--muted); margin-top: 0;">
+      PriceList và PriceListDetail
+    </p>
+  </header>
+
+  <div class="content" style="
+    display: flex;
+    gap: 40px;
+    justify-content: space-between;
+  ">
+
+    <!-- LEFT DESCRIPTION -->
+    <div style="flex: 1; min-width: 350px; font-size:18px; line-height:1.6;">
+      <p>
+        <strong>PriceList</strong> đại diện cho một danh sách giá áp dụng cho từng venue hoặc từng môn thể thao.
+        Cho phép định nghĩa nhiều bảng giá khác nhau theo thời điểm, mùa cao điểm, hoặc giá đặc biệt.
+      </p>
+
+      <p style="margin-top:18px;">
+        <strong>PriceListDetail</strong> chứa từng dòng giá bao gồm:
+        <br>• Ngày áp dụng hoặc ngày trong tuần  
+        <br>• Khung giờ: StartTime – EndTime  
+        <br>• Giá theo giờ  
+        <br>• Loại giá: cố định (long-term), vãng lai (walk-in)  
+      </p>
+
+      <p class="meta" style="margin-top:18px;">
+        Thiết kế hỗ trợ khuyến mãi, dịp lễ, và biểu đồ giá theo khung giờ cho chủ sân.
+      </p>
+    </div>
+
+    <!-- RIGHT SIDE: TABLE MOCKUP SVG -->
+    <div style="flex: 1; min-width: 430px; display:flex; justify-content:center;">
+
+      <svg viewBox="0 0 650 430" width="100%" style="max-width:620px;">
+
+        <defs>
+          <linearGradient id="table-bg-13" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.05)" />
+            <stop offset="100%" stop-color="rgba(255,255,255,0.02)" />
+          </linearGradient>
+
+          <filter id="shadow-13" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.45"/>
+          </filter>
+
+          <marker id="arrow-price" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#00c7ff"></path>
+          </marker>
+        </defs>
+
+        <!-- PRICELIST TABLE -->
+        <rect x="40" y="40" width="260" height="180" rx="12"
+          fill="url(#table-bg-13)" stroke="rgba(255,255,255,0.12)" filter="url(#shadow-13)" />
+
+        <text x="170" y="65" text-anchor="middle"
+          fill="var(--accent)" font-size="18" font-weight="700">PriceList</text>
+
+        <text x="55" y="95" fill="var(--text)" font-size="15">• id (GUID)</text>
+        <text x="55" y="118" fill="var(--text)" font-size="15">• venue_id → Venues.id</text>
+        <text x="55" y="141" fill="var(--text)" font-size="15">• title</text>
+        <text x="55" y="164" fill="var(--text)" font-size="15">• type (normal / special / holiday)</text>
+        <text x="55" y="187" fill="var(--text)" font-size="15">• description</text>
+
+        <!-- PRICELIST DETAIL TABLE -->
+        <rect x="360" y="200" width="260" height="190" rx="12"
+          fill="url(#table-bg-13)" stroke="rgba(255,255,255,0.12)" filter="url(#shadow-13)" />
+
+        <text x="490" y="225" text-anchor="middle"
+          fill="var(--accent)" font-size="18" font-weight="700">PriceListDetail</text>
+
+        <text x="375" y="255" fill="var(--text)" font-size="15">• id (GUID)</text>
+        <text x="375" y="278" fill="var(--text)" font-size="15">• pricelist_id → PriceList.id</text>
+        <text x="375" y="301" fill="var(--text)" font-size="15">• day_of_week / date</text>
+        <text x="375" y="324" fill="var(--text)" font-size="15">• start_time – end_time</text>
+        <text x="375" y="347" fill="var(--text)" font-size="15">• price</text>
+        <text x="375" y="370" fill="var(--text)" font-size="15">• price_type (fixed / walk-in)</text>
+
+        <!-- RELATION ARROW -->
+        <line x1="260" y1="200" x2="360" y2="240"
+          stroke="rgba(255,255,255,0.18)" stroke-width="2" marker-end="url(#arrow-price)" />
+
+      </svg>
+
+    </div>
+
+  </div>
+
+  <footer style="margin-top: 25px;">
+    <div class="meta">Price Model</div>
+    <div class="page">Slide 13 / 24</div>
+  </footer>
+
+</section>
+
+
+  <!-- Slide 14 -->
+  <!-- Slide 14 -->
+<section class="slide" data-index="14" aria-label="Slide 14">
+
+  <header style="margin-bottom: 20px;">
+    <h1 style="font-size: 32px; color: var(--accent); margin-bottom: 8px;">
+      Tích hợp Machine Learning (SVM)
+    </h1>
+    <p class="lead" style="color: var(--muted); margin-top: 0;">
+      Gợi ý sân dựa trên lịch sử tìm kiếm của người dùng
+    </p>
+  </header>
+
+  <div class="content" style="
+    display: flex;
+    gap: 40px;
+    justify-content: space-between;
+    align-items: flex-start;
+  ">
+
+    <!-- LEFT DESCRIPTION -->
+    <div style="flex: 1; min-width: 350px; font-size:18px; line-height:1.6;">
+      
+      <p>
+        Mô hình <strong>SVM</strong> được huấn luyện hoàn toàn dựa trên
+        <strong>lịch sử tìm kiếm (search history)</strong> của người dùng:
+        <br>• Từ khóa người dùng nhập  
+        <br>• Tần suất tìm kiếm theo môn thể thao  
+        <br>• Mẫu từ khóa phổ biến theo khu vực  
+        <br>• Các tìm kiếm dẫn đến click (CTR)  
+      </p>
+
+      <p style="margin-top:18px;">
+        Dữ liệu được vector hóa (TF-IDF hoặc Bag-of-Words) và đưa vào SVM để học cách
+        <strong>phân loại truy vấn vào nhóm sân phù hợp</strong>.
+      </p>
+
+      <p style="margin-top:18px;">
+        Khi người dùng nhập query, React gửi yêu cầu đến <strong>FastAPI</strong>,
+        mô hình SVM trả về danh sách các nhóm sân khả năng cao.
+        Laravel tiếp tục truy vấn DB để lấy thông tin chi tiết (giá, hình ảnh, vị trí).
+      </p>
+
+      <p class="meta" style="margin-top:20px;">
+        SVM phù hợp vì dữ liệu truy vấn thường ngắn, đơn giản và cần tốc độ xử lý nhanh.
+      </p>
+
+    </div>
+
+    <!-- RIGHT SVG PIPELINE -->
+    <div style="flex: 1; min-width: 430px; display:flex; justify-content:center;">
+
+      <svg viewBox="0 0 700 380" width="100%" style="max-width:650px;">
+
+        <defs>
+          <linearGradient id="ml-bg" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.05)" />
+            <stop offset="100%" stop-color="rgba(255,255,255,0.02)" />
+          </linearGradient>
+
+          <filter id="ml-shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.45"/>
+          </filter>
+
+          <marker id="arrow-ml" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#00c7ff"></path>
+          </marker>
+        </defs>
+
+        <!-- User Query -->
+        <rect x="40" y="140" width="150" height="70" rx="12"
+          fill="url(#ml-bg)" stroke="rgba(255,255,255,0.12)" filter="url(#ml-shadow)" />
+        <text x="115" y="175" text-anchor="middle"
+          fill="var(--text)" font-size="16" font-weight="700">User Query</text>
+        <text x="115" y="195" text-anchor="middle"
+          fill="var(--muted)" font-size="12">keyword</text>
+
+        <!-- FastAPI SVM -->
+        <rect x="260" y="100" width="180" height="150" rx="12"
+          fill="rgba(0,199,255,0.05)" stroke="rgba(0,199,255,0.18)" filter="url(#ml-shadow)" />
+        <text x="350" y="135" text-anchor="middle"
+          fill="var(--accent)" font-size="16" font-weight="700">FastAPI</text>
+        <text x="350" y="158" text-anchor="middle"
+          fill="var(--muted)" font-size="13">SVM Classifier</text>
+        <text x="350" y="180" text-anchor="middle"
+          fill="var(--muted)" font-size="13">Predict Venue Group</text>
+
+        <!-- Laravel API -->
+        <rect x="480" y="140" width="170" height="70" rx="12"
+          fill="url(#ml-bg)" stroke="rgba(255,255,255,0.12)" filter="url(#ml-shadow)" />
+        <text x="565" y="175" text-anchor="middle"
+          fill="var(--text)" font-size="16" font-weight="700">Laravel API</text>
+        <text x="565" y="195" text-anchor="middle"
+          fill="var(--muted)" font-size="12">truy vấn venue phù hợp</text>
+
+        <!-- React UI -->
+        <rect x="260" y="280" width="180" height="70" rx="12"
+          fill="url(#ml-bg)" stroke="rgba(255,255,255,0.12)" filter="url(#ml-shadow)" />
+        <text x="350" y="315" text-anchor="middle"
+          fill="var(--text)" font-size="16" font-weight="700">React UI</text>
+        <text x="350" y="335" text-anchor="middle"
+          fill="var(--muted)" font-size="12">hiển thị gợi ý sân</text>
+
+        <!-- Arrows -->
+        <line x1="190" y1="175" x2="260" y2="175"
+          stroke="rgba(255,255,255,0.12)" stroke-width="2" marker-end="url(#arrow-ml)" />
+
+        <line x1="440" y1="175" x2="480" y2="175"
+          stroke="rgba(255,255,255,0.12)" stroke-width="2" marker-end="url(#arrow-ml)" />
+
+        <line x1="565" y1="210" x2="565" y2="280"
+          stroke="rgba(255,255,255,0.12)" stroke-width="2" marker-end="url(#arrow-ml)" />
+
+        <line x1="350" y1="250" x2="350" y2="280"
+          stroke="rgba(255,255,255,0.12)" stroke-width="2" marker-end="url(#arrow-ml)" />
+
+      </svg>
+
+    </div>
+
+  </div>
+
+  <footer style="margin-top: 25px;">
+    <div class="meta">Machine Learning</div>
+    <div class="page">Slide 14 / 24</div>
+  </footer>
+
+</section>
+
+
+  <!-- Slide 15 -->
+    <section class="slide" data-index="15" aria-label="Slide 15">
+
+  <header style="margin-bottom: 20px;">
+    <h1 style="font-size: 32px; color: var(--accent); margin-bottom: 6px;">
+      Thiết kế giao diện User: Trang chủ
+    </h1>
+    <p class="lead" style="color: var(--muted); margin: 0;">
+      Mô tả ngắn gọn (nếu muốn)
+    </p>
+  </header>
+
+  <div class="content" style="display:flex; justify-content:center; margin-top:20px;">
+    <div style="
+      width: 90%;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+    ">
+      <img src="./Screenshot 2025-12-12 202204.png"
+           alt="UI Screenshot"
+           style="width:100%; display:block; border-radius:20px;">
+    </div>
+  </div>
+
+  <footer style="margin-top: 20px;">
+    <div class="meta">Giao diện</div>
+    <div class="page">Slide 15 / 24</div>
+  </footer>
+
+</section>
+    <section class="slide" data-index="16" aria-label="Slide 16">
+
+  <header style="margin-bottom: 20px;">
+    <h1 style="font-size: 32px; color: var(--accent); margin-bottom: 6px;">
+      Giao diện tìm kiếm & kết quả
+    </h1>
+    <p class="lead" style="color: var(--muted); margin: 0;">
+      Mô tả ngắn gọn (nếu muốn)
+    </p>
+  </header>
+
+  <div class="content" style="display:flex; justify-content:center; margin-top:20px;">
+    <div style="
+      width: 90%;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+    ">
+      <img src="./Screenshot 2025-12-12 202702.png"
+           alt="UI Screenshot"
+           style="width:100%; display:block; border-radius:20px;">
+    </div>
+  </div>
+
+  <footer style="margin-top: 20px;">
+    <div class="meta">Giao diện</div>
+    <div class="page">Slide 16 / 24</div>
+  </footer>
+
+</section>
+
+  
+    <section class="slide" data-index="17" aria-label="Slide 17">
+
+  <header style="margin-bottom: 20px;">
+    <h1 style="font-size: 32px; color: var(--accent); margin-bottom: 6px;">
+      Giao diện chi tiết sân
+    </h1>
+    <p class="lead" style="color: var(--muted); margin: 0;">
+      Mô tả ngắn gọn (nếu muốn)
+    </p>
+  </header>
+
+  <div class="content" style="display:flex; justify-content:center; margin-top:20px;">
+    <div style="
+      width: 90%;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+    ">
+      <img src="./Screenshot 2025-12-13 022606.png"
+           alt="UI Screenshot"
+           style="width:100%; display:block; border-radius:20px;">
+    </div>
+  </div>
+
+  <footer style="margin-top: 20px;">
+    <div class="meta">Giao diện</div>
+    <div class="page">Slide 17 / 24</div>
+  </footer>
+
+</section>
+<section class="slide" data-index="18" aria-label="Slide 18">
+
+  <header style="margin-bottom: 20px;">
+    <h1 style="font-size: 32px; color: var(--accent); margin-bottom: 6px;">
+      Quy trình đặt sân (User flow)
+    </h1>
+    <p class="lead" style="color: var(--muted); margin: 0;">
+    </p>
+  </header>
+
+  <div class="content" style="display:flex; justify-content:center; margin-top:20px;">
+    <div style="
+      width: 90%;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+    ">
+      <img src="./Screenshot 2025-12-13 022716.png"
+           alt="UI Screenshot"
+           style="width:100%; display:block; border-radius:20px;">
+    </div>
+  </div>
+
+  <footer style="margin-top: 20px;">
+    <div class="meta">Giao diện</div>
+    <div class="page">Slide 18 / 24</div>
+  </footer>
+
+</section>
+
+<section class="slide" data-index="19" aria-label="Slide 19">
+
+  <header style="margin-bottom: 20px;">
+    <h1 style="font-size: 32px; color: var(--accent); margin-bottom: 6px;">
+      Giao diện Chủ sân: Dashboard
+    </h1>
+    <p class="lead" style="color: var(--muted); margin: 0;">
+      Báo cáo nhanh và cảnh báo
+    </p>
+  </header>
+
+  <div class="content" style="display:flex; justify-content:center; margin-top:20px;">
+    <div style="
+      width: 90%;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+    ">
+      <img src="./Screenshot 2025-12-13 022408.png"
+           alt="UI Screenshot"
+           style="width:100%; display:block; border-radius:20px;">
+    </div>
+  </div>
+
+  <footer style="margin-top: 20px;">
+    <div class="meta">Giao diện</div>
+    <div class="page">Slide 19 / 23</div>
+  </footer>
+
+</section>
+<section class="slide" data-index="20" aria-label="Slide 20">
+
+  <header style="margin-bottom: 20px;">
+    <h1 style="font-size: 32px; color: var(--accent); margin-bottom: 6px;">
+      Quản lý sân & bảng giá
+    </h1>
+    <p class="lead" style="color: var(--muted); margin: 0;">
+    </p>
+  </header>
+
+  <div class="content" style="display:flex; justify-content:center; margin-top:20px;">
+    <div style="
+      width: 90%;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+    ">
+      <img src="./Screenshot 2025-12-13 022448.png"
+           alt="UI Screenshot"
+           style="width:100%; display:block; border-radius:20px;">
+    </div>
+  </div>
+
+  <footer style="margin-top: 20px;">
+    <div class="meta">Giao diện</div>
+    <div class="page">Slide 20 / 23</div>
+  </footer>
+
+</section>
+
+
+<section class="slide" data-index="21" aria-label="Slide 21">
+
+  <header style="margin-bottom: 20px;">
+    <h1 style="font-size: 32px; color: var(--accent); margin-bottom: 6px;">
+      Giao diện Admin 
+    </h1>
+    <p class="lead" style="color: var(--muted); margin: 0;">
+      Quản trị toàn hệ thống
+    </p>
+  </header>
+
+  <div class="content" style="display:flex; justify-content:center; margin-top:20px;">
+    <div style="
+      width: 90%;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+    ">
+      <img src="./Screenshot 2025-12-13 022528.png"
+           alt="UI Screenshot"
+           style="width:100%; display:block; border-radius:20px;">
+    </div>
+  </div>
+
+  <footer style="margin-top: 20px;">
+    <div class="meta">Giao diện</div>
+    <div class="page">Slide 21 / 23</div>
+  </footer>
+
+</section>
+
+  <!-- Slide 23 -->
+  <section class="slide" data-index="23" aria-label="Slide 23">
+    <header>
+      <h1>Kết quả thực hiện & tồn tại</h1>
+      <p class="lead">Những gì đã hoàn thành và hạn chế</p>
+    </header>
+    <div class="content">
+      <ul>
+        <li>Hoàn thiện giao diện cơ bản cho User, Owner và Admin; chức năng đặt sân, đăng nhập, quản lý venue.</li>
+        <li>Tích hợp mô hình SVM để gợi ý tìm kiếm; triển khai FastAPI cho inference.</li>
+        <li>Tồn tại: UI trên mobile cần tối ưu thêm; một số báo cáo nâng cao và feature nâng cao chưa hoàn tất.</li>
+      </ul>
+      <p class="meta">Đã đạt mục tiêu ban đầu, còn nhiều hướng cải tiến để hoàn thiện sản phẩm thương mại.</p>
+    </div>
+    <footer>
+      <div class="meta">Kết quả & Tồn tại</div>
+      <div class="page">Slide 22 / 23</div>
+    </footer>
+  </section>
+
+  <!-- Slide 24 -->
+  <section class="slide" data-index="24" aria-label="Slide 24">
+    <header>
+      <h1>Kết luận và hướng phát triển</h1>
+      <p class="lead">Ưu tiên & kế hoạch tiếp theo</p>
+    </header>
+    <div class="content">
+      <ul>
+        <li>Hoàn thiện UI/UX trên mobile và tối ưu accessibility.</li>
+        <li>Tích hợp cổng thanh toán trực tuyến đầy đủ (Ngân hàng / Ví điện tử).</li>
+        <li>Nâng cấp mô hình ML: từ SVM sang hybrid/embedding để cá nhân hoá gợi ý.</li>
+        <li>Mở rộng thành mobile app, tích hợp CRM và module sự kiện/giải đấu.</li>
+      </ul>
+      <p class="meta">Cảm ơn thầy/cô và các bạn đã lắng nghe. Sẵn sàng trả lời câu hỏi.</p>
+    </div>
+    <footer>
+      <div class="meta">Kết luận</div>
+      <div class="page">Slide 23 / 23</div>
+    </footer>
+  </section>
+
+  <!-- Navigation Buttons -->
+  <div class="nav-btn nav-left" id="btnPrev" title="Previous (←)">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M15 18l-6-6 6-6"></path>
+    </svg>
+  </div>
+
+  <div class="nav-btn nav-right" id="btnNext" title="Next (→)">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M9 6l6 6-6 6"></path>
+    </svg>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="progress" aria-hidden="true">
+    <i id="progressBar"></i>
+  </div>
+
+</div>
+
+<script>
+  (function(){
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const total = slides.length;
+    let current = 0;
+    const progressBar = document.getElementById('progressBar');
+    const stage = document.getElementById('stage');
+
+    function show(idx){
+      slides.forEach(s => s.classList.remove('active'));
+      const slide = slides[idx];
+      slide.classList.add('active');
+      current = idx;
+      // update footer page text
+      const pageEls = slide.querySelectorAll('.page');
+      pageEls.forEach(el => el.textContent = `Slide ${idx+1} / ${total}`);
+      // update progress
+      const pct = Math.round(((idx+1)/total) * 100);
+      progressBar.style.width = pct + '%';
+      // focus for keyboard accessibility
+      window.scrollTo(0,0);
+    }
+
+    function next(){
+      show((current + 1) % total);
+    }
+    function prev(){
+      show((current - 1 + total) % total);
+    }
+
+    // initial
+    show(0);
+
+    // keyboard
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 'ArrowRight' || e.key === 'PageDown') next();
+      if(e.key === 'ArrowLeft' || e.key === 'PageUp') prev();
+      if(e.key === 'Home') show(0);
+      if(e.key === 'End') show(total - 1);
+    });
+
+    // click navigation buttons
+    document.getElementById('btnNext').addEventListener('click', next);
+    document.getElementById('btnPrev').addEventListener('click', prev);
+
+    // click on slide to next
+    slides.forEach(s => {
+      s.addEventListener('click', (evt) => {
+        // avoid clicking footer or control elements
+        const rect = s.getBoundingClientRect();
+        const x = evt.clientX - rect.left;
+        // if clicked near left edge -> prev
+        if (x < 80) { prev(); return; }
+        // else next
+        next();
+      });
+    });
+
+    // swipe support for touch
+    let touchStartX = null;
+    stage.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].clientX;
+    }, {passive:true});
+    stage.addEventListener('touchend', (e) => {
+      if (touchStartX === null) return;
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(dx) > 40) {
+        if (dx < 0) next(); else prev();
+      }
+      touchStartX = null;
+    });
+
+    // prevent arrow keys from scrolling page
+    window.addEventListener("keydown", function(e) {
+      if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","PageUp","PageDown","Home","End"].indexOf(e.key) > -1) {
+        e.preventDefault();
+      }
+    }, false);
+
+  })();
+</script>
+
+</body>
+</html>
